@@ -10,15 +10,17 @@ import (
 	"github.com/tonny-zhang/cotton"
 )
 
-var mgrObj imgr
 var expired = 3600
 
-// SessionName session cookie name
-var SessionName = "sessionid"
+// SessionCookieName session cookie name
+var SessionCookieName = "sessionid"
 
-type imgr interface {
-	Create() ISession
+// IMgr mgr interface
+type IMgr interface {
+	Create(key string) ISession
 	Get(id string) (ISession, bool)
+	SetMaxExpired(int)
+	GetMaxExpired() int
 }
 
 func getUUID() string {
@@ -30,13 +32,13 @@ func getUUID() string {
 
 // HasUsedSession check whether used session
 func HasUsedSession(ctx *cotton.Context) bool {
-	_, ok := ctx.Get(SessionName)
+	_, ok := ctx.Get(SessionCookieName)
 	return ok
 }
 
 // GetSession get session
 func GetSession(ctx *cotton.Context) (session ISession) {
-	v, ok := ctx.Get(SessionName)
+	v, ok := ctx.Get(SessionCookieName)
 	if ok {
 		session = v.(ISession)
 	} else {
@@ -46,32 +48,31 @@ func GetSession(ctx *cotton.Context) (session ISession) {
 }
 
 // Middleware middleware
-func Middleware(name string, options ...string) cotton.HandlerFunc {
-	switch name {
-	default:
-		UseMemory()
-	}
-	if mgrObj == nil {
+func Middleware(mgr IMgr) cotton.HandlerFunc {
+	if mgr == nil {
 		panic("init first")
 	}
 	return func(ctx *cotton.Context) {
-		sessionID, e := ctx.Cookie(SessionName)
+		sessionID, e := ctx.Cookie(SessionCookieName)
 
 		var ss ISession
 		var ok bool
 		if e == nil {
-			ss, ok = mgrObj.Get(sessionID)
+			ss, ok = mgr.Get(sessionID)
 			if !ok {
-				ss = mgrObj.Create()
+				ss = mgr.Create(sessionID)
 				sessionID = ss.GetID()
 			}
 		} else {
-			ss = mgrObj.Create()
+			ss = mgr.Create(sessionID)
 			sessionID = ss.GetID()
 		}
-		ctx.Set(SessionName, ss)
+		ss.Expired(mgr.GetMaxExpired())
+		ss.Save()
+
+		ctx.Set(SessionCookieName, ss)
 		http.SetCookie(ctx.Response, &http.Cookie{
-			Name:   SessionName,
+			Name:   SessionCookieName,
 			Value:  sessionID,
 			Path:   "/",
 			MaxAge: expired,

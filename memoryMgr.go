@@ -4,15 +4,17 @@ import (
 	"time"
 )
 
-// Mgr session mgr
 type memoryMgr struct {
-	sessions map[string]ISession
+	maxExpired int
+	sessions   map[string]ISession
 }
 
-func (instance *memoryMgr) Create() ISession {
-	key := getUUID()
-	ss := NewMemory(key)
-	ss.Expired(expired)
+func (instance *memoryMgr) Create(key string) ISession {
+	if key == "" {
+		key = getUUID()
+	}
+
+	ss := newMemory(key)
 
 	instance.sessions[key] = ss
 	return ss
@@ -33,14 +35,21 @@ func (instance *memoryMgr) GC() {
 		instance.GC()
 	})
 }
+func (instance *memoryMgr) SetMaxExpired(expired int) {
+	instance.maxExpired = expired
+}
+func (instance *memoryMgr) GetMaxExpired() int {
+	return instance.maxExpired
+}
 
-var _ imgr = &memoryMgr{}
+var _ IMgr = &memoryMgr{}
 
-// UseMemory use memory session
-func UseMemory() {
+// NewMemoryMgr get memory session mgr
+func NewMemoryMgr() IMgr {
 	m := &memoryMgr{
 		sessions: make(map[string]ISession, 0),
 	}
-	mgrObj = m
 	go m.GC()
+
+	return m
 }
