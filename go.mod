@@ -1,4 +1,4 @@
-module session
+module github.com/tonny-zhang/cotton-session
 
 go 1.16
 
