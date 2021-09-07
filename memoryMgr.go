@@ -24,7 +24,7 @@ func (instance *memoryMgr) Get(id string) (ISession, bool) {
 	return v, ok
 }
 func (instance *memoryMgr) GC() {
-	now := time.Now().Second()
+	now := time.Now().Unix()
 	for k, s := range instance.sessions {
 		if s.IsExpired(now) {
 			delete(instance.sessions, k)

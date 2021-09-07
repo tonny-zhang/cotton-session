@@ -50,7 +50,7 @@ func (instance redisSession) Expired(expired int) {
 }
 
 // IsExpired check whether expired
-func (instance redisSession) IsExpired(toExpired int) bool {
+func (instance redisSession) IsExpired(toExpired int64) bool {
 	return false
 }
 

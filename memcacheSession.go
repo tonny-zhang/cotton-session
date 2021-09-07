@@ -49,7 +49,7 @@ func (instance memcacheSession) Expired(expired int) {
 }
 
 // IsExpired check whether expired
-func (instance memcacheSession) IsExpired(toExpired int) bool {
+func (instance memcacheSession) IsExpired(toExpired int64) bool {
 	return false
 }
 

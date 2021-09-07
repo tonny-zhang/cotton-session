@@ -8,7 +8,7 @@ type ISession interface {
 	Del(key string)
 	Save() error
 	Expired(expired int)
-	IsExpired(toExpired int) bool
+	IsExpired(toExpired int64) bool
 }
 type sessionData struct {
 	val     interface{}

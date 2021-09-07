@@ -7,7 +7,7 @@ import (
 
 type memorySession struct {
 	id      string
-	expired int
+	expired int64
 	cache   map[string]interface{}
 }
 
@@ -40,11 +40,11 @@ func (instance memorySession) GetID() string {
 // Expired update expired
 func (instance *memorySession) Expired(expired int) {
 	var s time.Duration = time.Second * time.Duration(expired)
-	instance.expired = time.Now().Add(s).Second()
+	instance.expired = time.Now().Add(s).Unix()
 }
 
 // IsExpired check whether expired
-func (instance memorySession) IsExpired(toExpired int) bool {
+func (instance memorySession) IsExpired(toExpired int64) bool {
 	return instance.expired < toExpired
 }
 
